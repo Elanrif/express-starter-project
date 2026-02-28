@@ -1,0 +1,65 @@
+name: Release Docker Image
+
+on:
+    workflow_dispatch: # Permet de déclencher manuellement le workflow depuis l'interface GitHub
+        inputs:
+            environment:
+                description: "Choose the deployment environment"
+                required: true
+                default: "staging"
+                type: choice
+                options:
+                    - staging
+                    - production
+
+jobs:
+    build-and-push-image:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Log in to DockerHub
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v2
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+
+            - name: Generate unique numeric tag
+              id: generate-tag
+              run: |
+                  TAG=$(date +'%y%m%d')-$(git rev-parse --short HEAD)
+                  echo "tag=$TAG" >> $GITHUB_ENV
+
+            - name: Check if image already exists
+              id: check-image
+              run: |
+                  IMAGE_EXISTS=$(docker manifest inspect ${{ secrets.DOCKER_USERNAME }}/nodejs-starter-project:${{ env.tag }} > /dev/null 2>&1 && echo "true" || echo "false")
+                  echo "image_exists=$IMAGE_EXISTS" >> $GITHUB_ENV
+
+            - name: Build and push Docker image
+              if: env.image_exists == 'false'
+              uses: docker/build-push-action@v4
+              with:
+                  context: .
+                  push: true
+                  tags: |
+                      ${{ secrets.DOCKER_USERNAME }}/nodejs-starter-project:${{ github.event.inputs.environment }}
+                      ${{ secrets.DOCKER_USERNAME }}/nodejs-starter-project:${{ env.tag }}
+
+            - name: Image release complete
+              if: env.image_exists == 'false'
+              run: |
+                echo "Docker image has been successfully built and pushed with tags: ${{ github.event.inputs.environment }} and ${{ env.tag }}."
+
+            - name: Skip image build
+              if: env.image_exists == 'true'
+              run: echo "Docker image already exists with tag ${{ env.tag }}. Skipping build."
