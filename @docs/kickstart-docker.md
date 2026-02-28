@@ -11,18 +11,20 @@ docker build -t <image-name>:<tag> .
 docker build -t <image-name>:<tag> -f /chemin/vers/Dockerfile .  # Spécifier un Dockerfile personnalisé
 
 # --- ℹ️ Lancer un conteneur à partir d'une image déjà construite ---
+docker run -p 3002:3000 --name <container-name> <image-name:tag>  # Lancer avec un port exposé
 docker run -d --name <container-name> <image-name:tag>  # -d Créer et lancer en arrière-plan
 docker run -it --name <container-name> <image-name:tag>      # Lancer en mode interactif
-docker run -p 8080:80 --name <container-name> <image-name:tag>  # Lancer avec un port exposé
 
 # --- ❌ Gérer les conteneurs et les images ---
+docker images | grep "<image-name:tag>" # Lister les images 
 docker ps                       # Lister les conteneurs en cours d'exécution
+docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}" # Avec format
 docker ps -a                    # Lister tous les conteneurs
 docker stop <container-name>    # Arrêter un conteneur
 docker rm <container-name>      # Supprimer un conteneur
 docker rmi <image-id>           # Supprimer une image
 
-# --- SECTION 2 : Debug et Administration ---
+# --- ⚠️ SECTION 2 : Debug et Administration ---
 docker logs -f <container-name>     # Voir les logs en temps réel
 docker exec -it <container-name> sh # Entrer dans le conteneur
 docker inspect <container-name>     # Voir les détails (IP, volumes)
