@@ -11,7 +11,7 @@ on:
 
 jobs:
     lint:
-        name: Run Reviewdog # Nom du job
+        name: Run review # Nom du job
         runs-on: ubuntu-latest # Machine virtuelle Ubuntu
 
         steps: # Les actions à exécuter
