@@ -1,0 +1,69 @@
+# Utilise l'image Node.js version 24 basée sur Alpine comme image de base
+FROM node:24-alpine AS base
+
+# Image multi-stage pour optimiser la taille de l'image finale
+# FROM base AS deps, FROM base AS builder, FROM base AS runner 
+# sont des étapes de construction distinctes
+
+# Étape 1 : Installation des dépendances
+FROM base AS deps
+# Met à jour les paquets et installe libc6-compat pour la compatibilité
+RUN apk update && apk add --no-cache libc6-compat
+# Définit le répertoire de travail
+WORKDIR /app
+# Copie les fichiers package.json et package-lock.json pour installer les dépendances
+COPY package.json package-lock.json* ./
+# Désactive le script prepare de husky pour éviter les hooks
+RUN npm pkg delete scripts.prepare
+# Installe les dépendances en mode production
+RUN npm ci
+
+# Étape 2 : Construction de l'application
+FROM base AS builder
+# Définit le répertoire de travail
+WORKDIR /app
+# Copie les dépendances installées depuis l'étape précédente
+COPY --from=deps /app/node_modules ./node_modules
+# Copie tout le code source dans le conteneur
+COPY . .
+# Définit l'environnement en mode production
+ENV NODE_ENV=production
+# Désactive la télémétrie de Next.js
+ENV NEXT_TELEMETRY_DISABLED=1
+# Construit l'application et supprime les dépendances de développement
+RUN npm run build && npm prune --omit=dev
+
+# Étape 3 : Préparation de l'image finale pour l'exécution
+FROM base AS runner
+# Définit le répertoire de travail
+WORKDIR /app
+# Définit l'environnement en mode production
+ENV NODE_ENV=production
+# Définit les arguments pour l'utilisateur et le groupe
+ARG USER_GID=1001
+ARG USER_UID=1001
+# Ajoute un groupe et un utilisateur système si nécessaire
+RUN getent group ${USER_GID} || addgroup --system --gid ${USER_GID} nodejs
+RUN getent passwd ${USER_UID} || adduser --system --uid ${USER_UID} nextjs
+
+# Copie les fichiers publics depuis l'étape de construction
+COPY --from=builder /app/public ./public
+# Crée le répertoire de cache pour Next.js et ajuste les permissions
+RUN mkdir -p .next/cache && chown -R ${USER_UID}:${USER_GID} .next && chmod -R 777 .next/cache
+
+# Copie les fichiers nécessaires pour exécuter l'application
+COPY --from=builder --chown=${USER_UID}:${USER_GID} /app/.next/standalone ./
+COPY --from=builder --chown=${USER_UID}:${USER_GID} /app/.next/static ./.next/static
+# Supprime le fichier .env pour éviter de l'exposer dans l'image finale
+RUN rm -f .env
+
+# Définit l'utilisateur par défaut pour exécuter le conteneur
+USER nextjs
+# Expose le port 3000 pour l'application
+EXPOSE 3000
+# Définit les variables d'environnement pour le port et l'hôte
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Commande par défaut pour démarrer l'application
+CMD ["node", "server.js"]

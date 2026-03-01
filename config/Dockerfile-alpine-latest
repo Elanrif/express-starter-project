@@ -1,0 +1,28 @@
+# Utilise une image de base Alpine Linux
+FROM alpine:latest
+
+# Définit le répertoire de travail dans le conteneur
+WORKDIR /demo
+
+# COPY ./source /destination: sert à copier des fichiers ou répertoires
+# de votre machine locale vers le système de fichiers du conteneur docker
+COPY . .
+
+# RUN: exécute des commandes lors de la construction de l'image dans le conteneur
+RUN echo "Création de dossiers et fichiers dans le conteneur..."
+
+# Crée un dossier et des fichiers pour démontrer la structure
+RUN mkdir subfolder
+RUN echo "Ceci est un fichier dans /demo" > fichier1.txt
+RUN echo "Ceci est un fichier dans /demo/subfolder" > subfolder/fichier2.txt
+
+# Liste les fichiers et dossiers créés
+RUN echo "Contenu du dossier /demo :"
+RUN ls -R .
+
+# Affiche un message de fin
+RUN echo "Création terminée."
+
+# CMD pour specifier la commande ou script à exécuter à chaque démarrage du conteneur
+# CMD ["commande", "arg1", "arg2"]
+CMD ["sh", "-c", "echo 'Voici le contenu du répertoire /demo :' && ls -R ."]

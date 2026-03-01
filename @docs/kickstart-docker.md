@@ -20,6 +20,7 @@ docker images | grep "<image-name:tag>" # Lister les images
 docker ps                       # Lister les conteneurs en cours d'exécution
 docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}" # Avec format
 docker ps -a                    # Lister tous les conteneurs
+docker start -ai <container-name> # lancer un container et intéragir
 docker stop <container-name>    # Arrêter un conteneur
 docker rm <container-name>      # Supprimer un conteneur
 docker rmi <image-id>           # Supprimer une image

@@ -1,0 +1,24 @@
+# 1. Utilise une image de base légère (Alpine Linux)
+FROM node:18-alpine
+
+# 2. Définit le dossier de travail dans le conteneur
+WORKDIR /app
+
+# COPY ./source /destination: sert à copier des fichiers ou répertoires
+# de votre machine locale vers le système de fichiers du conteneur docker
+COPY package*.json ./
+
+# RUN: exécute des commandes lors de la construction de l'image dans le conteneur
+# 4. Installe les dépendances
+RUN npm install
+
+# 5. Copie le reste du code source
+COPY . .
+
+# 6. Indique le port sur lequel l'app écoute
+EXPOSE 3000
+
+# CMD pour specifier la commande ou script à exécuter à chaque démarrage du conteneur
+# CMD ["commande", "arg1", "arg2"]
+# 7. Commande pour lancer l'application
+CMD ["node", "index.js"]

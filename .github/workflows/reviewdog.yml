@@ -1,0 +1,33 @@
+name: Reviewdog CI # Nom du workflow
+
+on:
+    push: # Déclenchement lors des push
+        branches:
+            - main # Branche principale
+    pull_request: # Déclenchement lors des PR
+        branches: # liste des branches de base pour les PR
+            - main # Branche cible
+            - develop # Branche de développement
+
+jobs:
+    lint:
+        name: Run Reviewdog # Nom du job
+        runs-on: ubuntu-latest # Machine virtuelle Ubuntu
+
+        steps: # Les actions à exécuter
+            - name: Checkout code # Récupérer le code source
+              uses: actions/checkout@v3 # Action cloner le dépôt
+
+            - name: Set up Node.js # Configurer Node.js
+              uses: actions/setup-node@v4 # Action Installer Node.js
+
+            - name: Install dependencies # Installer les dépendances
+              run: |
+                  npm install # Installer depuis package.json
+
+            - name: Run ESLint with Reviewdog # Exécuter ESLint avec Reviewdog
+              uses: reviewdog/action-eslint@v1 # Action Intégrer ESLint avec Reviewdog
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }} # Jeton GitHub
+                  reporter: github-pr-review # Résultats dans les PR
+                  level: warning # Niveau des messages

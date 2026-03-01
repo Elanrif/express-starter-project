@@ -1,0 +1,45 @@
+name: "My Custom Action" # Nom de l'action
+
+description: "Une action simple" # Description courte
+
+inputs:
+  message: # Entrée de l'action
+    description: "Message à afficher" # Description
+    required: true # Obligatoire
+
+runs:
+  using: "composite" # Type composite
+  steps:
+    - name: Afficher le message # Affiche le message
+      run: |
+        echo "😉${{ inputs.message }}" # Commande echo
+      shell: bash # Spécifie l'interpréteur de commandes
+
+    - name: Afficher une variable globale
+      run: |
+        echo "Variable globale : $GLOBAL_VAR"
+      shell: bash # Spécifie l'interpréteur de commandes
+
+    - name: Afficher un secret
+      run: |
+        echo "Secret : $MY_SECRET"
+      shell: bash # Spécifie l'interpréteur de commandes
+
+    - name: Afficher un événement GitHub
+      run: |
+        echo "Événement GitHub : ${{ github.event_name }}" # Exemple d'utilisation de github.event_name
+      shell: bash # Spécifie l'interpréteur de commandes
+
+    - name: Afficher le runner et le workspace
+      run: |
+        echo "Runner OS : ${{ runner.os }}"
+        echo "Workspace : ${{ github.workspace }}"
+      shell: bash # Spécifie l'interpréteur de commandes
+
+    - run: |
+        uname -a # Infos système
+      shell: bash # Spécifie l'interpréteur de commandes
+
+    - run: |
+        ls -la # Liste des fichiers
+      shell: bash # Spécifie l'interpréteur de commandes

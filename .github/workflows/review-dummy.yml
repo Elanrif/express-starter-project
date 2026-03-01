@@ -1,0 +1,37 @@
+name: Test My Custom Action
+
+on:
+    push:
+        branches:
+            - main
+    pull_request: # tout les PRs
+     # branches:  # liste des branches de base pour les PR
+     #   - main
+     #   - develop
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        env:
+            GLOBAL_VAR: "Ceci est une variable globale" # Variable d'environnement globale
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4 # Action Clonner le dépôt
+
+            - name: Run My Custom ActionIER
+              uses: ./.github/actions/dummy-action
+              with:
+                  message: "Bonjour, ceci est un test avec une variable globale : ${{ env.GLOBAL_VAR }}"
+
+            - name: Utiliser un secret
+              run: |
+                  echo "Le secret est : ${{ secrets.GITHUB_TOKEN }}"
+
+            - name: Afficher un événement GitHub
+              run: |
+                  echo "L'événement est : ${{ github.event_name }}"
+
+            - name: Afficher le runner et le workspace
+              run: |
+                  echo "Runner OS : ${{ runner.os }}"
+                  echo "Workspace : ${{ github.workspace }}"

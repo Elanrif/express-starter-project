@@ -1,0 +1,32 @@
+services:
+  app:
+    container_name: express-starter-app # Nom du conteneur
+    build:
+      # context. Spécifie le contexte de construction
+      # le répertoire courant où se trouve le Dockerfile
+      context: .
+      dockerfile: Dockerfile # Spécifie le chemin vers le Dockerfile
+    image: express-starter:latest # Nom de l'image à construire
+    ports:
+      - "3000:3000" # Mappe le port 3000 du conteneur au port 3000 de l'hôte
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/usr/src/app # Monte le répertoire courant dans le conteneur pour le développement
+    # working_dir: /usr/src/app # Optionnel, Redéfinit le répertoire de travail dans le conteneur
+    # command: "node server.js" # Optionnnel, redefinit la Commande à exécuter pour démarrer l'application
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432" # Mappe le port 5432 du conteneur au port 5432 de l'hôte
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persiste les données de la base
+
+volumes:
+  postgres_data:
